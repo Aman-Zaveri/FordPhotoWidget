@@ -1,5 +1,6 @@
 package com.example.fordphotowidget
 
+import android.annotation.SuppressLint
 import android.content.BroadcastReceiver
 import android.content.ContentUris
 import android.content.Context
@@ -31,13 +32,15 @@ import java.util.Date
 import java.util.Locale
 import android.media.MediaScannerConnection
 import android.os.Environment
+import androidx.appcompat.app.AppCompatActivity
 
 class GalleryFragment : Fragment() {
 
     private lateinit var recyclerView: RecyclerView
     private lateinit var adapter: PhotoAdapter
     private lateinit var progressBar: ProgressBar
-    private lateinit var downloadButton: Button
+    private lateinit var darkOverlay: View
+    private lateinit var downloadButton: com.google.android.material.floatingactionbutton.FloatingActionButton
     private val imageList = mutableListOf<PhotoData>()
 
     // Content observer to detect media changes instead of broadcast receiver
@@ -47,15 +50,53 @@ class GalleryFragment : Fragment() {
         }
     }
 
+    @SuppressLint("ClickableViewAccessibility")
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
         val view = inflater.inflate(R.layout.fragment_gallery, container, false)
 
+        // Initialize the toolbar
+        val toolbar = view.findViewById<androidx.appcompat.widget.Toolbar>(R.id.headerToolbar)
+        (activity as AppCompatActivity).setSupportActionBar(toolbar)
+
+        // Rest of your existing initialization code
         recyclerView = view.findViewById(R.id.recyclerView)
         progressBar = view.findViewById(R.id.progressBar)
         downloadButton = view.findViewById(R.id.downloadButton)
+        darkOverlay = view.findViewById(R.id.darkOverlay)
+
+
+
+        // Add hover and click effects
+        downloadButton.apply {
+            // Increase elevation when pressed for more pronounced effect
+            this.setOnTouchListener { v, event ->
+                when (event.action) {
+                    android.view.MotionEvent.ACTION_DOWN -> {
+                        // When button is pressed, animate to a larger elevation
+                        this.animate().scaleX(0.9f).scaleY(0.9f).setDuration(100).start()
+                        v.elevation = 12f
+                        false
+                    }
+                    android.view.MotionEvent.ACTION_UP, android.view.MotionEvent.ACTION_CANCEL -> {
+                        // When touch is released, return to original size
+                        this.animate().scaleX(1f).scaleY(1f).setDuration(100).start()
+                        v.elevation = 6f
+                        false
+                    }
+                    else -> false
+                }
+            }
+        }
+
+        // Update your XML layout for better visual feedback
+        downloadButton.apply {
+            compatElevation = 6f
+            backgroundTintList = ContextCompat.getColorStateList(requireContext(), android.R.color.holo_blue_dark)
+            rippleColor = ContextCompat.getColor(requireContext(), android.R.color.white)
+        }
 
         recyclerView.layoutManager = LinearLayoutManager(requireContext())
 
@@ -76,6 +117,7 @@ class GalleryFragment : Fragment() {
 
     private fun downloadImagesFromRemoteServer() {
         progressBar.visibility = View.VISIBLE
+        darkOverlay.visibility = View.VISIBLE
         downloadButton.isEnabled = false
 
         // Add log to track execution
@@ -152,6 +194,7 @@ class GalleryFragment : Fragment() {
             } finally {
                 withContext(Dispatchers.Main) {
                     progressBar.visibility = View.GONE
+                    darkOverlay.visibility = View.GONE
                     downloadButton.isEnabled = true
                 }
             }
