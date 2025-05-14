@@ -6,6 +6,7 @@ import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
+import com.bumptech.glide.Glide
 
 class PhotoAdapter(private val photos: List<PhotoData>) :
     RecyclerView.Adapter<PhotoAdapter.PhotoViewHolder>() {
@@ -26,7 +27,14 @@ class PhotoAdapter(private val photos: List<PhotoData>) :
     override fun onBindViewHolder(holder: PhotoViewHolder, position: Int) {
         val photo = photos[position]
 
-        holder.imageView.setImageURI(photo.uri)
+        // Replace the problematic Glide code
+        Glide.with(holder.itemView.context)
+            .load(photo.uri)
+            .centerCrop()
+            // Use a default Android drawable instead of a custom placeholder
+            .placeholder(android.R.drawable.ic_menu_gallery)
+            .into(holder.imageView)
+
         holder.textName.text = photo.name
         holder.textSize.text = "Size: ${photo.size / 1024} KB"
         holder.textDate.text = "Date: ${java.text.SimpleDateFormat("dd/MM/yyyy").format(photo.date * 1000)}"
