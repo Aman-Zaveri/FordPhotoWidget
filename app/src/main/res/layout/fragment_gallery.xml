@@ -9,12 +9,22 @@
     <androidx.appcompat.widget.Toolbar
         android:id="@+id/headerToolbar"
         android:layout_width="match_parent"
-        android:layout_height="?attr/actionBarSize"
+        android:layout_height="64dp"
         android:background="@color/header_background"
         android:elevation="4dp"
-        app:title="Ford Photo Gallery"
-        app:titleTextColor="@color/header_text"
-        />
+        app:titleTextAppearance="@style/ToolbarTitleStyle"
+        android:gravity="center">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:text="Ford Photo Gallery"
+            android:textColor="@color/header_text"
+            android:textSize="20sp"
+            android:textStyle="bold" />
+
+    </androidx.appcompat.widget.Toolbar>
 
     <!-- RecyclerView positioned below the header -->
     <androidx.recyclerview.widget.RecyclerView

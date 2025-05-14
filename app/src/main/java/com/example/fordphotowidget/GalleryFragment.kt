@@ -59,7 +59,6 @@ class GalleryFragment : Fragment() {
 
         // Initialize the toolbar
         val toolbar = view.findViewById<androidx.appcompat.widget.Toolbar>(R.id.headerToolbar)
-        (activity as AppCompatActivity).setSupportActionBar(toolbar)
 
         // Rest of your existing initialization code
         recyclerView = view.findViewById(R.id.recyclerView)
