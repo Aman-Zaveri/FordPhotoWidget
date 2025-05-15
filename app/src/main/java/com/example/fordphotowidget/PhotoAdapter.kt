@@ -7,6 +7,7 @@ import android.widget.ImageView
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
+import java.util.Locale
 
 class PhotoAdapter(private val photos: List<PhotoData>) :
     RecyclerView.Adapter<PhotoAdapter.PhotoViewHolder>() {
@@ -14,6 +15,8 @@ class PhotoAdapter(private val photos: List<PhotoData>) :
     class PhotoViewHolder(view: View) : RecyclerView.ViewHolder(view) {
         val imageView: ImageView = view.findViewById(R.id.imageView)
         val textName: TextView = view.findViewById(R.id.textName)
+        val textFileType: TextView = view.findViewById(R.id.textFileType)
+        val textDimensions: TextView = view.findViewById(R.id.textDimensions)
         val textSize: TextView = view.findViewById(R.id.textSize)
         val textDate: TextView = view.findViewById(R.id.textDate)
     }
@@ -26,18 +29,51 @@ class PhotoAdapter(private val photos: List<PhotoData>) :
 
     override fun onBindViewHolder(holder: PhotoViewHolder, position: Int) {
         val photo = photos[position]
+        val context = holder.itemView.context
 
-        // Replace the problematic Glide code
-        Glide.with(holder.itemView.context)
+        // Load image with Glide
+        Glide.with(context)
             .load(photo.uri)
             .centerCrop()
-            // Use a default Android drawable instead of a custom placeholder
             .placeholder(android.R.drawable.ic_menu_gallery)
             .into(holder.imageView)
 
+        // Set basic metadata
         holder.textName.text = photo.name
-        holder.textSize.text = "Size: ${photo.size / 1024} KB"
-        holder.textDate.text = "Date: ${java.text.SimpleDateFormat("dd/MM/yyyy").format(photo.date * 1000)}"
+
+        // Extract and display file extension
+        val fileExtension = photo.name.substringAfterLast('.', "unknown")
+        holder.textFileType.text = "Type: ${fileExtension.uppercase()}"
+
+        // Format size nicely
+        val sizeInKB = photo.size / 1024
+        val sizeText = if (sizeInKB > 1024) {
+            String.format("Size: %.1f MB", sizeInKB / 1024f)
+        } else {
+            "Size: $sizeInKB KB"
+        }
+        holder.textSize.text = sizeText
+
+        // Format date with both date and time
+        val sdf = java.text.SimpleDateFormat("MMM dd, yyyy 'at' HH:mm", Locale.getDefault())
+        holder.textDate.text = "Added: ${sdf.format(photo.date * 1000)}"
+
+        // Get image dimensions using Glide
+        Glide.with(context)
+            .asBitmap()
+            .load(photo.uri)
+            .into(object : com.bumptech.glide.request.target.CustomTarget<android.graphics.Bitmap>() {
+                override fun onResourceReady(
+                    resource: android.graphics.Bitmap,
+                    transition: com.bumptech.glide.request.transition.Transition<in android.graphics.Bitmap>?
+                ) {
+                    holder.textDimensions.text = "Dimensions: ${resource.width} × ${resource.height}"
+                }
+
+                override fun onLoadCleared(placeholder: android.graphics.drawable.Drawable?) {
+                    // Do nothing
+                }
+            })
     }
 
     override fun getItemCount(): Int = photos.size
